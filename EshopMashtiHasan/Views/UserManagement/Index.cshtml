@@ -1,0 +1,104 @@
+﻿@model Security.Domain.DTO.User.UserSearchModel
+
+
+<div>
+    @await Component.InvokeAsync("UserSearchBox",this.Model);
+</div>
+
+<span class="btn btn-primary" id="btnAddModalForm" onclick="AddModal()">Add form</span>
+
+<div id="dvUserList">
+    @await Component.InvokeAsync("UserList",this.Model);
+</div>
+
+
+
+<script>
+
+    function AddModal() {
+        var sendingData = null;
+        var sendingUrl = '@Url.Action("Add","UserManagement")';
+        $.get(sendingUrl, sendingData, function(rd) {
+            $("#dvContent").html(rd);
+            $("#UserModal").modal("show");
+        });
+    }
+    function AddUser() {
+        var sendingData = $("#frmAddUser").serialize();
+        var sendingUrl = '@Url.Action("Add","UserManagement")';
+        $.post(sendingUrl, sendingData, function(op) {
+            if (op.success.toString() == "true") {
+                $("#UserModal").modal("hide");
+                SuccessMessage(op.message);
+                BindGrid(BindGridAction);
+                //RefreshSearchBox(RefreshGridAction);
+            }
+            else {
+                ErrorMessage(op.message);
+            }
+        });
+    }
+
+    function Delete(id){
+        var sendingData = "id="+ id;
+        var sendingUrl = '@Url.Action("Delete","UserManagement")';
+        $.post(sendingUrl, sendingData, function(op) {
+            if (op.success.toString() == "true") {
+                SuccessMessage(op.message);
+                BindGrid();
+            }
+            else {
+                ErrorMessage(op.message);
+            }
+        });
+    }
+
+    function BindGrid() {
+        var sendingData = $("#frmUserSearchBox").serialize();
+        var sendingUrl = '@Url.Action("UserList","UserManagement")';
+        $.get(sendingUrl, sendingData, function(rd) {
+            $("#dvUserList").html(rd);
+        });
+    }
+
+    $(document).on("keyup","#UserNameChange",function(){
+        BindGrid();
+    })
+    $(document).on("keyup", "#FirstNameChange" ,function( ){
+        BindGrid();
+    })
+    $(document).on("keyup", "#LastNameChange", function() {
+        BindGrid();
+    })
+    $(document).on("keyup", "#MobileChange", function() {
+        BindGrid();
+    })
+    $(document).on("change", "#RoleIDChange", function() {
+        BindGrid();
+    })
+
+    function SuccessMessage(SuccessTxt) {
+        Swal.fire({
+            icon: 'success',
+            title: 'وضعیت ثبت',
+            text: SuccessTxt,
+        });
+    }
+    function ErrorMessage(ErrorTxt) {
+        Swal.fire({
+            icon: 'error',
+            title: 'خطا',
+            text: ErrorTxt,
+        });
+    }
+</script>
+
+
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="UserModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div id="dvContent"></div>
+        </div>
+    </div>
+</div>
